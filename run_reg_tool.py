@@ -59,6 +59,7 @@ class MyMainForm(QMainWindow, Ui_Form):
         
         self.alpha = 30
         self.index = -1
+        self.file_count = 0
         self.save_index = 0
         
         # x是水平方向，y是竖直方向
@@ -96,7 +97,8 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.index = self.index + foward
         self.delta_x = 0
         self.delta_y = 0
-        self.label.setText("filename: " + self.source_image_path + "my_irstream-" + str(self.index) + ".jpg")
+        self.label.setText("filename: " + os.path.basename(self.file_name_list[self.index]))
+        # self.label.setText("filename: " + self.source_image_path + "my_irstream-" + str(self.index) + ".jpg")
         B = 23.5
         f = 17
         Z = 5000
@@ -121,8 +123,11 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.center_y = center_transformed[1] * 2
         self.center_y = int(self.center_y.astype(int))
 
-        self.ir_path = self.source_image_path + "/my_irstream-" + str(self.index) + ".jpg"
-        self.vi_path = self.source_image_path + "/my_vistream-" + str(self.index) + ".png"
+        # self.ir_path = self.source_image_path + "/my_irstream-" + str(self.index) + ".jpg"
+        # self.vi_path = self.source_image_path + "/my_vistream-" + str(self.index) + ".png"
+        self.ir_path = self.file_name_list[self.index]
+        self.vi_path = self.ir_path.replace('my_irstream', 'my_vistream')[:-4] + ".png"
+        
         
         self.ir_image = cv2.imread(self.ir_path, cv2.IMREAD_GRAYSCALE)
         self.ir_image = cv2.cvtColor(self.ir_image, cv2.COLOR_GRAY2RGB)
@@ -140,10 +145,16 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.source_image_path = QFileDialog.getExistingDirectory(self, "select a folder", "./")
         self.source_image_path = self.source_image_path + '/'
         
-        self.file_count = len(glob.glob(self.source_image_path + "*.jpg"))
+        self.file_name_list = sorted(glob.glob(self.source_image_path + "*.jpg"), key=lambda name: name[:-4])
+        self.file_count = len(self.file_name_list)
+        
         if self.file_count == 0:
             print("source images not found")
             self.write_to_textbrowser("source images not found")
+            self.index = -1
+            self.scene = QGraphicsScene()
+            self.graphicsView.setScene(self.scene)
+            self.label.setText("filename")
             return
         
         self.write_to_textbrowser("find " + str(self.file_count) + " pairs of images")
@@ -152,18 +163,26 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.show_next_image(1)
     
     def control_up(self):
+        if self.file_count == 0:
+            return
         self.delta_y = self.delta_y + 1
         self.draw_fused_image()
     
     def control_down(self):
+        if self.file_count == 0:
+            return
         self.delta_y = self.delta_y - 1
         self.draw_fused_image()
     
     def control_left(self):
+        if self.file_count == 0:
+            return
         self.delta_x = self.delta_x - 1
         self.draw_fused_image()
     
     def control_right(self):
+        if self.file_count == 0:
+            return
         self.delta_x = self.delta_x + 1
         self.draw_fused_image()
     
@@ -176,6 +195,8 @@ class MyMainForm(QMainWindow, Ui_Form):
             self.show_next_image(1)
     
     def control_save(self):
+        if self.file_count == 0:
+            return
         y_begin = self.center_y - int(self.H * self.scale) + self.delta_y
         y_end = self.center_y + int(self.H * self.scale) + self.delta_y
         x_begin = self.center_x - int(self.W * self.scale) + self.delta_x
@@ -190,6 +211,8 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.save_index = self.save_index + 1
     
     def control_alpha(self):
+        if self.file_count == 0:
+            return
         self.alpha = self.horizontalSlider.value()
         fused_image = self.vi_image_region.copy()
         fused_image[60 : 60 + int(self.H * self.scale) * 2, 80 : 80 + int(self.W * self.scale) * 2] = \
