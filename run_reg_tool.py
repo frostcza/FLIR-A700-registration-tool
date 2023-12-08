@@ -98,7 +98,7 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.delta_x = 0
         self.delta_y = 0
         self.label.setText("filename: " + os.path.basename(self.file_name_list[self.index]))
-        # self.label.setText("filename: " + self.source_image_path + "my_irstream-" + str(self.index) + ".jpg")
+        # self.label.setText("filename: " + self.source_image_path + "my_irstream-" + str(self.index) + ".png")
         B = 23.5
         f = 17
         Z = 5000
@@ -123,10 +123,10 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.center_y = center_transformed[1] * 2
         self.center_y = int(self.center_y.astype(int))
 
-        # self.ir_path = self.source_image_path + "/my_irstream-" + str(self.index) + ".jpg"
+        # self.ir_path = self.source_image_path + "/my_irstream-" + str(self.index) + ".png"
         # self.vi_path = self.source_image_path + "/my_vistream-" + str(self.index) + ".png"
         self.ir_path = self.file_name_list[self.index]
-        self.vi_path = self.ir_path.replace('my_irstream', 'my_vistream')[:-4] + ".png"
+        self.vi_path = self.ir_path.replace('my_irstream', 'my_vistream')
         
         
         self.ir_image = cv2.imread(self.ir_path, cv2.IMREAD_GRAYSCALE)
@@ -145,8 +145,8 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.source_image_path = QFileDialog.getExistingDirectory(self, "select a folder", "./")
         self.source_image_path = self.source_image_path + '/'
         
-        self.file_name_list = sorted(glob.glob(self.source_image_path + "*.jpg"), key=lambda name: name[:-4])
-        self.file_count = len(self.file_name_list)
+        self.file_name_list = sorted(glob.glob(self.source_image_path + "*.png"), key=lambda name: name[:-4])
+        self.file_count = int(len(self.file_name_list) / 2)
         
         if self.file_count == 0:
             print("source images not found")
@@ -206,7 +206,7 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.cropped_vi_image = cv2.resize(self.cropped_vi_image,(640, 480),interpolation=cv2.INTER_CUBIC)
         self.cropped_vi_image = cv2.cvtColor(self.cropped_vi_image, cv2.COLOR_RGB2BGR)
         cv2.imwrite(self.reg_vi_path + "/vi-" + str(self.save_index) + ".png", self.cropped_vi_image)
-        shutil.copy(self.ir_path, self.reg_ir_path + "/ir-" + str(self.save_index) + ".jpg")
+        shutil.copy(self.ir_path, self.reg_ir_path + "/ir-" + str(self.save_index) + ".png")
         self.write_to_textbrowser("registered images saved, index = " + str(self.save_index))
         self.save_index = self.save_index + 1
     
