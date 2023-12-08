@@ -145,8 +145,9 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.source_image_path = QFileDialog.getExistingDirectory(self, "select a folder", "./")
         self.source_image_path = self.source_image_path + '/'
         
-        self.file_name_list = sorted(glob.glob(self.source_image_path + "*.png"), key=lambda name: name[:-4])
-        self.file_count = int(len(self.file_name_list) / 2)
+        # self.file_name_list = sorted(glob.glob(self.source_image_path + "*my_irstream*.png"), key=lambda name: name[:-4])
+        self.file_name_list = sorted(glob.glob(self.source_image_path + "*my_irstream*.png"), key=os.path.getmtime)
+        self.file_count = len(self.file_name_list)
         
         if self.file_count == 0:
             print("source images not found")
